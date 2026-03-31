@@ -1,7 +1,18 @@
 import prisma from "../../config/database";
 
 export class ReportsService {
-  async getDashboardStats(organizationId: string) {
+  private orgFilter(organizationId?: string) {
+    return organizationId ? { organizationId } : {};
+  }
+
+  private contactOrgFilter(organizationId?: string) {
+    return organizationId ? { contact: { organizationId } } : {};
+  }
+
+  async getDashboardStats(organizationId?: string) {
+    const orgWhere = this.orgFilter(organizationId);
+    const contactOrgWhere = this.contactOrgFilter(organizationId);
+
     const [
       totalContacts,
       activeContacts,
@@ -14,29 +25,27 @@ export class ReportsService {
       contactGrowth,
       messagesByChannel,
     ] = await Promise.all([
-      prisma.contact.count({ where: { organizationId } }),
-      prisma.contact.count({ where: { organizationId, status: "ACTIVE" } }),
-      prisma.segment.count({ where: { organizationId } }),
-      prisma.message.count({
-        where: { contact: { organizationId } },
-      }),
+      prisma.contact.count({ where: orgWhere }),
+      prisma.contact.count({ where: { ...orgWhere, status: "ACTIVE" } }),
+      prisma.segment.count({ where: orgWhere }),
+      prisma.message.count({ where: contactOrgWhere }),
       prisma.contact.groupBy({
         by: ["gender"],
-        where: { organizationId },
+        where: orgWhere,
         _count: true,
       }),
       prisma.contact.groupBy({
         by: ["status"],
-        where: { organizationId },
+        where: orgWhere,
         _count: true,
       }),
       prisma.contact.groupBy({
         by: ["source"],
-        where: { organizationId, source: { not: null } },
+        where: { ...orgWhere, source: { not: null } },
         _count: true,
       }),
       prisma.interaction.findMany({
-        where: { contact: { organizationId } },
+        where: contactOrgWhere,
         orderBy: { date: "desc" },
         take: 10,
         include: {
@@ -46,7 +55,7 @@ export class ReportsService {
       this.getContactGrowth(organizationId),
       prisma.message.groupBy({
         by: ["channel"],
-        where: { contact: { organizationId } },
+        where: contactOrgWhere,
         _count: true,
       }),
     ]);
@@ -68,13 +77,15 @@ export class ReportsService {
     };
   }
 
-  private async getContactGrowth(organizationId: string) {
+  private async getContactGrowth(organizationId?: string) {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
+    const orgWhere = this.orgFilter(organizationId);
+
     const contacts = await prisma.contact.findMany({
       where: {
-        organizationId,
+        ...orgWhere,
         createdAt: { gte: sixMonthsAgo },
       },
       select: { createdAt: true },
@@ -90,9 +101,11 @@ export class ReportsService {
     return Object.entries(monthlyData).map(([month, count]) => ({ month, count }));
   }
 
-  async getNotifications(organizationId: string, limit = 20) {
+  async getNotifications(organizationId?: string, limit = 20) {
+    const orgWhere = this.orgFilter(organizationId);
+
     const notifications = await prisma.activityLog.findMany({
-      where: { organizationId },
+      where: orgWhere,
       orderBy: { createdAt: "desc" },
       take: limit,
       include: {
@@ -111,15 +124,16 @@ export class ReportsService {
     }));
   }
 
-  async getEngagementReport(organizationId: string, query: Record<string, string>) {
+  async getEngagementReport(organizationId?: string, query: Record<string, string> = {}) {
     const dateFrom = query.from ? new Date(query.from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const dateTo = query.to ? new Date(query.to) : new Date();
+    const contactOrgWhere = this.contactOrgFilter(organizationId);
 
     const [interactions, messages] = await Promise.all([
       prisma.interaction.groupBy({
         by: ["type"],
         where: {
-          contact: { organizationId },
+          ...contactOrgWhere,
           date: { gte: dateFrom, lte: dateTo },
         },
         _count: true,
@@ -127,7 +141,7 @@ export class ReportsService {
       prisma.message.groupBy({
         by: ["channel", "direction"],
         where: {
-          contact: { organizationId },
+          ...contactOrgWhere,
           sentAt: { gte: dateFrom, lte: dateTo },
         },
         _count: true,
@@ -137,17 +151,18 @@ export class ReportsService {
     return { dateRange: { from: dateFrom, to: dateTo }, interactions, messages };
   }
 
-  async globalSearch(organizationId: string, query: string) {
+  async globalSearch(organizationId?: string, query: string = "") {
     if (!query || query.trim().length < 2) {
       return { contacts: [], segments: [], campaigns: [] };
     }
 
     const search = query.trim();
+    const orgWhere = this.orgFilter(organizationId);
 
     const [contacts, segments, campaigns] = await Promise.all([
       prisma.contact.findMany({
         where: {
-          organizationId,
+          ...orgWhere,
           OR: [
             { firstName: { contains: search, mode: "insensitive" } },
             { lastName: { contains: search, mode: "insensitive" } },
@@ -169,7 +184,7 @@ export class ReportsService {
       }),
       prisma.segment.findMany({
         where: {
-          organizationId,
+          ...orgWhere,
           OR: [
             { name: { contains: search, mode: "insensitive" } },
             { description: { contains: search, mode: "insensitive" } },
@@ -186,7 +201,7 @@ export class ReportsService {
       }),
       prisma.campaign.findMany({
         where: {
-          organizationId,
+          ...orgWhere,
           OR: [
             { name: { contains: search, mode: "insensitive" } },
             { description: { contains: search, mode: "insensitive" } },

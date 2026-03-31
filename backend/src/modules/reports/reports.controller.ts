@@ -6,7 +6,8 @@ const reportsService = new ReportsService();
 export class ReportsController {
   async getDashboardStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const stats = await reportsService.getDashboardStats(req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const stats = await reportsService.getDashboardStats(orgId);
       res.json(stats);
     } catch (error) {
       next(error);
@@ -16,7 +17,8 @@ export class ReportsController {
   async getNotifications(req: Request, res: Response, next: NextFunction) {
     try {
       const limit = parseInt(req.query.limit as string) || 20;
-      const notifications = await reportsService.getNotifications(req.user!.organizationId, limit);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const notifications = await reportsService.getNotifications(orgId, limit);
       res.json(notifications);
     } catch (error) {
       next(error);
@@ -26,7 +28,8 @@ export class ReportsController {
   async globalSearch(req: Request, res: Response, next: NextFunction) {
     try {
       const query = (req.query.q as string) || "";
-      const results = await reportsService.globalSearch(req.user!.organizationId, query);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const results = await reportsService.globalSearch(orgId, query);
       res.json(results);
     } catch (error) {
       next(error);
@@ -35,8 +38,9 @@ export class ReportsController {
 
   async getEngagementReport(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const report = await reportsService.getEngagementReport(
-        req.user!.organizationId,
+        orgId,
         req.query as unknown as Record<string, string>
       );
       res.json(report);

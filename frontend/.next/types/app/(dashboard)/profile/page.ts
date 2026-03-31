@@ -1,4 +1,4 @@
-// File: /home/ubuntu/Documents/Modular CRM Developer for Community Management and Institutional Relations/frontend/src/app/(dashboard)/profile/page.tsx
+// File: /home/Community-Management-and-Institutional-Relations/frontend/src/app/(dashboard)/profile/page.tsx
 import * as entry from '../../../../../src/app/(dashboard)/profile/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
