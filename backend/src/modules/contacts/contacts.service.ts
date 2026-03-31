@@ -4,9 +4,13 @@ import { getPagination, paginatedResponse } from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
 
 export class ContactsService {
-  async findAll(organizationId: string, query: Record<string, string>) {
+  async findAll(organizationId: string | undefined, query: Record<string, string>) {
     const pagination = getPagination(query);
-    const where: Prisma.ContactWhereInput = { organizationId };
+    const where: Prisma.ContactWhereInput = {};
+
+    if (organizationId) {
+      where.organizationId = organizationId;
+    }
 
     if (query.search) {
       where.OR = [
@@ -51,9 +55,12 @@ export class ContactsService {
     return paginatedResponse(contacts, total, pagination);
   }
 
-  async findById(id: string, organizationId: string) {
+  async findById(id: string, organizationId: string | undefined) {
+    const where: Prisma.ContactWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
     const contact = await prisma.contact.findFirst({
-      where: { id, organizationId },
+      where,
       include: {
         tags: { include: { tag: true } },
         interests: { include: { interest: true } },
@@ -80,8 +87,11 @@ export class ContactsService {
     return contact;
   }
 
-  async update(id: string, organizationId: string, data: any) {
-    const existing = await prisma.contact.findFirst({ where: { id, organizationId } });
+  async update(id: string, organizationId: string | undefined, data: any) {
+    const where: Prisma.ContactWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const existing = await prisma.contact.findFirst({ where });
     if (!existing) throw new AppError("Contact not found", 404);
 
     const contact = await prisma.contact.update({
@@ -95,14 +105,20 @@ export class ContactsService {
     return contact;
   }
 
-  async delete(id: string, organizationId: string) {
-    const existing = await prisma.contact.findFirst({ where: { id, organizationId } });
+  async delete(id: string, organizationId: string | undefined) {
+    const where: Prisma.ContactWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const existing = await prisma.contact.findFirst({ where });
     if (!existing) throw new AppError("Contact not found", 404);
     await prisma.contact.delete({ where: { id } });
   }
 
-  async addTag(contactId: string, tagId: string, organizationId: string) {
-    const contact = await prisma.contact.findFirst({ where: { id: contactId, organizationId } });
+  async addTag(contactId: string, tagId: string, organizationId: string | undefined) {
+    const where: Prisma.ContactWhereInput = { id: contactId };
+    if (organizationId) where.organizationId = organizationId;
+
+    const contact = await prisma.contact.findFirst({ where });
     if (!contact) throw new AppError("Contact not found", 404);
 
     await prisma.contactTag.upsert({
@@ -112,8 +128,11 @@ export class ContactsService {
     });
   }
 
-  async removeTag(contactId: string, tagId: string, organizationId: string) {
-    const contact = await prisma.contact.findFirst({ where: { id: contactId, organizationId } });
+  async removeTag(contactId: string, tagId: string, organizationId: string | undefined) {
+    const where: Prisma.ContactWhereInput = { id: contactId };
+    if (organizationId) where.organizationId = organizationId;
+
+    const contact = await prisma.contact.findFirst({ where });
     if (!contact) throw new AppError("Contact not found", 404);
 
     await prisma.contactTag.delete({
@@ -121,8 +140,11 @@ export class ContactsService {
     });
   }
 
-  async addInteraction(contactId: string, organizationId: string, data: any) {
-    const contact = await prisma.contact.findFirst({ where: { id: contactId, organizationId } });
+  async addInteraction(contactId: string, organizationId: string | undefined, data: any) {
+    const where: Prisma.ContactWhereInput = { id: contactId };
+    if (organizationId) where.organizationId = organizationId;
+
+    const contact = await prisma.contact.findFirst({ where });
     if (!contact) throw new AppError("Contact not found", 404);
 
     return prisma.interaction.create({
@@ -130,22 +152,24 @@ export class ContactsService {
     });
   }
 
-  async getStats(organizationId: string) {
+  async getStats(organizationId: string | undefined) {
+    const orgFilter: Prisma.ContactWhereInput = organizationId ? { organizationId } : {};
+
     const [total, active, byGender, byStatus, recentContacts] = await Promise.all([
-      prisma.contact.count({ where: { organizationId } }),
-      prisma.contact.count({ where: { organizationId, status: "ACTIVE" } }),
+      prisma.contact.count({ where: orgFilter }),
+      prisma.contact.count({ where: { ...orgFilter, status: "ACTIVE" } }),
       prisma.contact.groupBy({
         by: ["gender"],
-        where: { organizationId },
+        where: orgFilter,
         _count: true,
       }),
       prisma.contact.groupBy({
         by: ["status"],
-        where: { organizationId },
+        where: orgFilter,
         _count: true,
       }),
       prisma.contact.findMany({
-        where: { organizationId },
+        where: orgFilter,
         orderBy: { createdAt: "desc" },
         take: 5,
         select: { id: true, firstName: true, lastName: true, createdAt: true },
@@ -155,9 +179,11 @@ export class ContactsService {
     return { total, active, byGender, byStatus, recentContacts };
   }
 
-  async exportContacts(organizationId: string) {
+  async exportContacts(organizationId: string | undefined) {
+    const where: Prisma.ContactWhereInput = organizationId ? { organizationId } : {};
+
     const contacts = await prisma.contact.findMany({
-      where: { organizationId },
+      where,
       include: {
         tags: { include: { tag: true } },
         interests: { include: { interest: true } },

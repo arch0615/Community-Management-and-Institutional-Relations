@@ -1,16 +1,18 @@
 import prisma from "../../config/database";
 import { AppError } from "../../middleware/errorHandler";
 import { getPagination, paginatedResponse } from "../../utils/pagination";
+import { Prisma } from "@prisma/client";
 
 export class MessagingService {
-  async getConversations(organizationId: string, query: Record<string, string>) {
+  async getConversations(organizationId: string | undefined, query: Record<string, string>) {
     const pagination = getPagination(query);
 
     // Get contacts with their latest message
-    const where: any = { organizationId, messages: { some: {} } };
+    const where: Prisma.ContactWhereInput = { messages: { some: {} } };
+    if (organizationId) where.organizationId = organizationId;
 
     if (query.channel) {
-      where.messages = { some: { channel: query.channel } };
+      where.messages = { some: { channel: query.channel as any } };
     }
 
     const [contacts, total] = await Promise.all([
@@ -34,16 +36,17 @@ export class MessagingService {
     return paginatedResponse(contacts, total, pagination);
   }
 
-  async getMessages(contactId: string, organizationId: string, query: Record<string, string>) {
-    const contact = await prisma.contact.findFirst({
-      where: { id: contactId, organizationId },
-    });
+  async getMessages(contactId: string, organizationId: string | undefined, query: Record<string, string>) {
+    const contactWhere: Prisma.ContactWhereInput = { id: contactId };
+    if (organizationId) contactWhere.organizationId = organizationId;
+
+    const contact = await prisma.contact.findFirst({ where: contactWhere });
     if (!contact) throw new AppError("Contact not found", 404);
 
     const pagination = getPagination(query);
 
-    const where: any = { contactId };
-    if (query.channel) where.channel = query.channel;
+    const where: Prisma.MessageWhereInput = { contactId };
+    if (query.channel) where.channel = query.channel as any;
 
     const [messages, total] = await Promise.all([
       prisma.message.findMany({
@@ -58,13 +61,14 @@ export class MessagingService {
     return paginatedResponse(messages, total, pagination);
   }
 
-  async sendMessage(contactId: string, organizationId: string, data: {
+  async sendMessage(contactId: string, organizationId: string | undefined, data: {
     content: string;
     channel: string;
   }) {
-    const contact = await prisma.contact.findFirst({
-      where: { id: contactId, organizationId },
-    });
+    const contactWhere: Prisma.ContactWhereInput = { id: contactId };
+    if (organizationId) contactWhere.organizationId = organizationId;
+
+    const contact = await prisma.contact.findFirst({ where: contactWhere });
     if (!contact) throw new AppError("Contact not found", 404);
 
     const message = await prisma.message.create({
@@ -80,21 +84,23 @@ export class MessagingService {
     return message;
   }
 
-  async getMessageStats(organizationId: string) {
+  async getMessageStats(organizationId: string | undefined) {
+    const orgFilter: Prisma.ContactWhereInput = organizationId ? { organizationId } : {};
+
     const [total, byChannel, byDirection, recent] = await Promise.all([
-      prisma.message.count({ where: { contact: { organizationId } } }),
+      prisma.message.count({ where: { contact: orgFilter } }),
       prisma.message.groupBy({
         by: ["channel"],
-        where: { contact: { organizationId } },
+        where: { contact: orgFilter },
         _count: true,
       }),
       prisma.message.groupBy({
         by: ["direction"],
-        where: { contact: { organizationId } },
+        where: { contact: orgFilter },
         _count: true,
       }),
       prisma.message.findMany({
-        where: { contact: { organizationId } },
+        where: { contact: orgFilter },
         orderBy: { sentAt: "desc" },
         take: 10,
         include: {

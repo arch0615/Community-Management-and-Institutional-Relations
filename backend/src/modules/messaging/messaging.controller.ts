@@ -6,8 +6,9 @@ const messagingService = new MessagingService();
 export class MessagingController {
   async getConversations(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const result = await messagingService.getConversations(
-        req.user!.organizationId,
+        orgId,
         req.query as unknown as Record<string, string>
       );
       res.json(result);
@@ -18,9 +19,10 @@ export class MessagingController {
 
   async getMessages(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const result = await messagingService.getMessages(
         req.params.contactId as string,
-        req.user!.organizationId,
+        orgId,
         req.query as unknown as Record<string, string>
       );
       res.json(result);
@@ -31,9 +33,10 @@ export class MessagingController {
 
   async sendMessage(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const message = await messagingService.sendMessage(
         req.params.contactId as string,
-        req.user!.organizationId,
+        orgId,
         req.body
       );
       res.status(201).json(message);
@@ -44,7 +47,8 @@ export class MessagingController {
 
   async getStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const stats = await messagingService.getMessageStats(req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const stats = await messagingService.getMessageStats(orgId);
       res.json(stats);
     } catch (error) {
       next(error);

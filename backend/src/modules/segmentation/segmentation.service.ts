@@ -4,26 +4,32 @@ import { getPagination, paginatedResponse } from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
 
 export class SegmentationService {
-  async findAll(organizationId: string, query: Record<string, string>) {
+  async findAll(organizationId: string | undefined, query: Record<string, string>) {
     const pagination = getPagination(query);
+    const where: Prisma.SegmentWhereInput = {};
+
+    if (organizationId) where.organizationId = organizationId;
 
     const [segments, total] = await Promise.all([
       prisma.segment.findMany({
-        where: { organizationId },
+        where,
         include: { _count: { select: { contacts: true } } },
         orderBy: { createdAt: "desc" },
         skip: pagination.skip,
         take: pagination.limit,
       }),
-      prisma.segment.count({ where: { organizationId } }),
+      prisma.segment.count({ where }),
     ]);
 
     return paginatedResponse(segments, total, pagination);
   }
 
-  async findById(id: string, organizationId: string) {
+  async findById(id: string, organizationId: string | undefined) {
+    const where: Prisma.SegmentWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
     const segment = await prisma.segment.findFirst({
-      where: { id, organizationId },
+      where,
       include: {
         contacts: {
           include: { contact: { include: { tags: { include: { tag: true } } } } },
@@ -43,8 +49,11 @@ export class SegmentationService {
     return segment;
   }
 
-  async update(id: string, organizationId: string, data: any) {
-    const existing = await prisma.segment.findFirst({ where: { id, organizationId } });
+  async update(id: string, organizationId: string | undefined, data: any) {
+    const where: Prisma.SegmentWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const existing = await prisma.segment.findFirst({ where });
     if (!existing) throw new AppError("Segment not found", 404);
 
     return prisma.segment.update({
@@ -54,18 +63,26 @@ export class SegmentationService {
     });
   }
 
-  async delete(id: string, organizationId: string) {
-    const existing = await prisma.segment.findFirst({ where: { id, organizationId } });
+  async delete(id: string, organizationId: string | undefined) {
+    const where: Prisma.SegmentWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const existing = await prisma.segment.findFirst({ where });
     if (!existing) throw new AppError("Segment not found", 404);
     await prisma.segment.delete({ where: { id } });
   }
 
-  async applyFilters(id: string, organizationId: string) {
-    const segment = await prisma.segment.findFirst({ where: { id, organizationId } });
+  async applyFilters(id: string, organizationId: string | undefined) {
+    const segWhere: Prisma.SegmentWhereInput = { id };
+    if (organizationId) segWhere.organizationId = organizationId;
+
+    const segment = await prisma.segment.findFirst({ where: segWhere });
     if (!segment) throw new AppError("Segment not found", 404);
 
     const filters = segment.filters as any;
-    const where: Prisma.ContactWhereInput = { organizationId };
+    const where: Prisma.ContactWhereInput = {};
+    if (organizationId) where.organizationId = organizationId;
+    else where.organizationId = segment.organizationId;
 
     if (filters.gender) where.gender = filters.gender;
     if (filters.status) where.status = filters.status;
@@ -97,9 +114,12 @@ export class SegmentationService {
 
   // ─── Tags Management ─────────────────────────────────────
 
-  async getAllTags(organizationId: string) {
+  async getAllTags(organizationId: string | undefined) {
+    const where: Prisma.TagWhereInput = {};
+    if (organizationId) where.organizationId = organizationId;
+
     return prisma.tag.findMany({
-      where: { organizationId },
+      where,
       include: { _count: { select: { contacts: true } } },
       orderBy: { name: "asc" },
     });
@@ -111,8 +131,11 @@ export class SegmentationService {
     });
   }
 
-  async deleteTag(id: string, organizationId: string) {
-    const tag = await prisma.tag.findFirst({ where: { id, organizationId } });
+  async deleteTag(id: string, organizationId: string | undefined) {
+    const where: Prisma.TagWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const tag = await prisma.tag.findFirst({ where });
     if (!tag) throw new AppError("Tag not found", 404);
     await prisma.tag.delete({ where: { id } });
   }

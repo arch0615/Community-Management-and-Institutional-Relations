@@ -6,8 +6,9 @@ const segmentationService = new SegmentationService();
 export class SegmentationController {
   async findAll(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const result = await segmentationService.findAll(
-        req.user!.organizationId,
+        orgId,
         req.query as unknown as Record<string, string>
       );
       res.json(result);
@@ -18,7 +19,8 @@ export class SegmentationController {
 
   async findById(req: Request, res: Response, next: NextFunction) {
     try {
-      const segment = await segmentationService.findById(req.params.id as string, req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const segment = await segmentationService.findById(req.params.id as string, orgId);
       res.json(segment);
     } catch (error) {
       next(error);
@@ -27,7 +29,8 @@ export class SegmentationController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const segment = await segmentationService.create(req.user!.organizationId, req.body);
+      const orgId = req.body.organizationId || req.user!.organizationId;
+      const segment = await segmentationService.create(orgId, req.body);
       res.status(201).json(segment);
     } catch (error) {
       next(error);
@@ -36,9 +39,10 @@ export class SegmentationController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const segment = await segmentationService.update(
         req.params.id as string,
-        req.user!.organizationId,
+        orgId,
         req.body
       );
       res.json(segment);
@@ -49,7 +53,8 @@ export class SegmentationController {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await segmentationService.delete(req.params.id as string, req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      await segmentationService.delete(req.params.id as string, orgId);
       res.status(204).send();
     } catch (error) {
       next(error);
@@ -58,9 +63,10 @@ export class SegmentationController {
 
   async applyFilters(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const result = await segmentationService.applyFilters(
         req.params.id as string,
-        req.user!.organizationId
+        orgId
       );
       res.json(result);
     } catch (error) {
@@ -71,7 +77,8 @@ export class SegmentationController {
   // Tags
   async getAllTags(req: Request, res: Response, next: NextFunction) {
     try {
-      const tags = await segmentationService.getAllTags(req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const tags = await segmentationService.getAllTags(orgId);
       res.json(tags);
     } catch (error) {
       next(error);
@@ -80,7 +87,8 @@ export class SegmentationController {
 
   async createTag(req: Request, res: Response, next: NextFunction) {
     try {
-      const tag = await segmentationService.createTag(req.user!.organizationId, req.body);
+      const orgId = req.body.organizationId || req.user!.organizationId;
+      const tag = await segmentationService.createTag(orgId, req.body);
       res.status(201).json(tag);
     } catch (error) {
       next(error);
@@ -89,7 +97,8 @@ export class SegmentationController {
 
   async deleteTag(req: Request, res: Response, next: NextFunction) {
     try {
-      await segmentationService.deleteTag(req.params.id as string, req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      await segmentationService.deleteTag(req.params.id as string, orgId);
       res.status(204).send();
     } catch (error) {
       next(error);

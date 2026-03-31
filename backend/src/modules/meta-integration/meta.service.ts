@@ -1,6 +1,7 @@
 import { config } from "../../config";
 import prisma from "../../config/database";
 import { AppError } from "../../middleware/errorHandler";
+import { Prisma } from "@prisma/client";
 
 const META_GRAPH_API = "https://graph.facebook.com/v19.0";
 
@@ -154,9 +155,12 @@ export class MetaService {
   }
 
   // ─── Channel Management ───────────────────────────────────
-  async getChannels(organizationId: string) {
+  async getChannels(organizationId: string | undefined) {
+    const where: Prisma.ChannelWhereInput = {};
+    if (organizationId) where.organizationId = organizationId;
+
     return prisma.channel.findMany({
-      where: { organizationId },
+      where,
       include: { _count: { select: { messages: true } } },
     });
   }
@@ -167,8 +171,11 @@ export class MetaService {
     });
   }
 
-  async updateChannel(id: string, organizationId: string, data: any) {
-    const channel = await prisma.channel.findFirst({ where: { id, organizationId } });
+  async updateChannel(id: string, organizationId: string | undefined, data: any) {
+    const where: Prisma.ChannelWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const channel = await prisma.channel.findFirst({ where });
     if (!channel) throw new AppError("Canal no encontrado", 404);
     return prisma.channel.update({
       where: { id },
@@ -177,8 +184,11 @@ export class MetaService {
     });
   }
 
-  async deleteChannel(id: string, organizationId: string) {
-    const channel = await prisma.channel.findFirst({ where: { id, organizationId } });
+  async deleteChannel(id: string, organizationId: string | undefined) {
+    const where: Prisma.ChannelWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const channel = await prisma.channel.findFirst({ where });
     if (!channel) throw new AppError("Canal no encontrado", 404);
     await prisma.channel.delete({ where: { id } });
   }

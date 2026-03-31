@@ -8,8 +8,9 @@ const contactsService = new ContactsService();
 export class ContactsController {
   async findAll(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const result = await contactsService.findAll(
-        req.user!.organizationId,
+        orgId,
         req.query as unknown as Record<string, string>
       );
       res.json(result);
@@ -20,7 +21,8 @@ export class ContactsController {
 
   async findById(req: Request, res: Response, next: NextFunction) {
     try {
-      const contact = await contactsService.findById(req.params.id as string, req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const contact = await contactsService.findById(req.params.id as string, orgId);
       res.json(contact);
     } catch (error) {
       next(error);
@@ -29,7 +31,8 @@ export class ContactsController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const contact = await contactsService.create(req.user!.organizationId, req.body);
+      const orgId = req.body.organizationId || req.user!.organizationId;
+      const contact = await contactsService.create(orgId, req.body);
       res.status(201).json(contact);
     } catch (error) {
       next(error);
@@ -38,9 +41,10 @@ export class ContactsController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const contact = await contactsService.update(
         req.params.id as string,
-        req.user!.organizationId,
+        orgId,
         req.body
       );
       res.json(contact);
@@ -51,7 +55,8 @@ export class ContactsController {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await contactsService.delete(req.params.id as string, req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      await contactsService.delete(req.params.id as string, orgId);
       res.status(204).send();
     } catch (error) {
       next(error);
@@ -60,7 +65,8 @@ export class ContactsController {
 
   async addTag(req: Request, res: Response, next: NextFunction) {
     try {
-      await contactsService.addTag(req.params.id as string, req.body.tagId, req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      await contactsService.addTag(req.params.id as string, req.body.tagId, orgId);
       res.json({ message: "Tag added" });
     } catch (error) {
       next(error);
@@ -69,7 +75,8 @@ export class ContactsController {
 
   async removeTag(req: Request, res: Response, next: NextFunction) {
     try {
-      await contactsService.removeTag(req.params.id as string, req.params.tagId as string, req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      await contactsService.removeTag(req.params.id as string, req.params.tagId as string, orgId);
       res.json({ message: "Tag removed" });
     } catch (error) {
       next(error);
@@ -78,9 +85,10 @@ export class ContactsController {
 
   async addInteraction(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const interaction = await contactsService.addInteraction(
         req.params.id as string,
-        req.user!.organizationId,
+        orgId,
         req.body
       );
       res.status(201).json(interaction);
@@ -91,7 +99,8 @@ export class ContactsController {
 
   async getStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const stats = await contactsService.getStats(req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const stats = await contactsService.getStats(orgId);
       res.json(stats);
     } catch (error) {
       next(error);
@@ -100,7 +109,8 @@ export class ContactsController {
 
   async exportCsv(req: Request, res: Response, next: NextFunction) {
     try {
-      const rows = await contactsService.exportContacts(req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const rows = await contactsService.exportContacts(orgId);
 
       if (rows.length === 0) {
         res.status(200).json({ message: "No hay contactos para exportar" });
@@ -153,7 +163,8 @@ export class ContactsController {
         return;
       }
 
-      const result = await contactsService.importContacts(req.user!.organizationId, rows);
+      const orgId = req.body.organizationId || req.user!.organizationId;
+      const result = await contactsService.importContacts(orgId, rows);
       res.json(result);
     } catch (error) {
       next(error);

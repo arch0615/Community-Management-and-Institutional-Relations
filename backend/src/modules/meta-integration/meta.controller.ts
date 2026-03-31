@@ -40,7 +40,8 @@ export class MetaController {
   // Channel management
   async getChannels(req: Request, res: Response, next: NextFunction) {
     try {
-      const channels = await metaService.getChannels(req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      const channels = await metaService.getChannels(orgId);
       res.json(channels);
     } catch (error) {
       next(error);
@@ -49,7 +50,8 @@ export class MetaController {
 
   async createChannel(req: Request, res: Response, next: NextFunction) {
     try {
-      const channel = await metaService.createChannel(req.user!.organizationId, req.body);
+      const orgId = req.body.organizationId || req.user!.organizationId;
+      const channel = await metaService.createChannel(orgId, req.body);
       res.status(201).json(channel);
     } catch (error) {
       next(error);
@@ -58,9 +60,10 @@ export class MetaController {
 
   async updateChannel(req: Request, res: Response, next: NextFunction) {
     try {
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
       const channel = await metaService.updateChannel(
         req.params.id as string,
-        req.user!.organizationId,
+        orgId,
         req.body
       );
       res.json(channel);
@@ -71,7 +74,8 @@ export class MetaController {
 
   async deleteChannel(req: Request, res: Response, next: NextFunction) {
     try {
-      await metaService.deleteChannel(req.params.id as string, req.user!.organizationId);
+      const orgId = req.user!.role === "SUPER_ADMIN" ? undefined : req.user!.organizationId;
+      await metaService.deleteChannel(req.params.id as string, orgId);
       res.status(204).send();
     } catch (error) {
       next(error);

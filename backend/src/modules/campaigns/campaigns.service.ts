@@ -4,9 +4,11 @@ import { getPagination, paginatedResponse } from "../../utils/pagination";
 import { Prisma, CampaignStatus } from "@prisma/client";
 
 export class CampaignsService {
-  async findAll(organizationId: string, query: Record<string, string>) {
+  async findAll(organizationId: string | undefined, query: Record<string, string>) {
     const pagination = getPagination(query);
-    const where: Prisma.CampaignWhereInput = { organizationId };
+    const where: Prisma.CampaignWhereInput = {};
+
+    if (organizationId) where.organizationId = organizationId;
 
     if (query.status) {
       where.status = query.status as CampaignStatus;
@@ -37,9 +39,12 @@ export class CampaignsService {
     return paginatedResponse(campaigns, total, pagination);
   }
 
-  async findById(id: string, organizationId: string) {
+  async findById(id: string, organizationId: string | undefined) {
+    const where: Prisma.CampaignWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
     const campaign = await prisma.campaign.findFirst({
-      where: { id, organizationId },
+      where,
       include: {
         segment: {
           include: {
@@ -96,7 +101,7 @@ export class CampaignsService {
     return campaign;
   }
 
-  async update(id: string, organizationId: string, data: {
+  async update(id: string, organizationId: string | undefined, data: {
     name?: string;
     description?: string;
     channel?: string;
@@ -105,7 +110,10 @@ export class CampaignsService {
     scheduledAt?: string;
     status?: CampaignStatus;
   }) {
-    const existing = await prisma.campaign.findFirst({ where: { id, organizationId } });
+    const where: Prisma.CampaignWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const existing = await prisma.campaign.findFirst({ where });
     if (!existing) throw new AppError("Campaña no encontrada", 404);
 
     if (existing.status === "SENT" || existing.status === "SENDING") {
@@ -113,9 +121,9 @@ export class CampaignsService {
     }
 
     if (data.segmentId) {
-      const segment = await prisma.segment.findFirst({
-        where: { id: data.segmentId, organizationId },
-      });
+      const segmentWhere: Prisma.SegmentWhereInput = { id: data.segmentId };
+      if (organizationId) segmentWhere.organizationId = organizationId;
+      const segment = await prisma.segment.findFirst({ where: segmentWhere });
       if (!segment) throw new AppError("Segmento no encontrado", 404);
     }
 
@@ -141,8 +149,11 @@ export class CampaignsService {
     return campaign;
   }
 
-  async delete(id: string, organizationId: string) {
-    const existing = await prisma.campaign.findFirst({ where: { id, organizationId } });
+  async delete(id: string, organizationId: string | undefined) {
+    const where: Prisma.CampaignWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const existing = await prisma.campaign.findFirst({ where });
     if (!existing) throw new AppError("Campaña no encontrada", 404);
 
     if (existing.status === "SENDING") {
@@ -152,9 +163,12 @@ export class CampaignsService {
     await prisma.campaign.delete({ where: { id } });
   }
 
-  async send(id: string, organizationId: string) {
+  async send(id: string, organizationId: string | undefined) {
+    const where: Prisma.CampaignWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
     const campaign = await prisma.campaign.findFirst({
-      where: { id, organizationId },
+      where,
       include: {
         segment: {
           include: {
@@ -208,10 +222,11 @@ export class CampaignsService {
     return { sent: sentCount, campaign: campaign.name };
   }
 
-  async duplicate(id: string, organizationId: string) {
-    const existing = await prisma.campaign.findFirst({
-      where: { id, organizationId },
-    });
+  async duplicate(id: string, organizationId: string | undefined) {
+    const where: Prisma.CampaignWhereInput = { id };
+    if (organizationId) where.organizationId = organizationId;
+
+    const existing = await prisma.campaign.findFirst({ where });
     if (!existing) throw new AppError("Campaña no encontrada", 404);
 
     const campaign = await prisma.campaign.create({
@@ -222,7 +237,7 @@ export class CampaignsService {
         content: existing.content || {},
         segmentId: existing.segmentId,
         status: "DRAFT",
-        organizationId,
+        organizationId: existing.organizationId,
       },
       include: {
         segment: {
@@ -234,21 +249,23 @@ export class CampaignsService {
     return campaign;
   }
 
-  async getStats(organizationId: string) {
+  async getStats(organizationId: string | undefined) {
+    const orgFilter: Prisma.CampaignWhereInput = organizationId ? { organizationId } : {};
+
     const [total, byStatus, byChannel, recentCampaigns] = await Promise.all([
-      prisma.campaign.count({ where: { organizationId } }),
+      prisma.campaign.count({ where: orgFilter }),
       prisma.campaign.groupBy({
         by: ["status"],
-        where: { organizationId },
+        where: orgFilter,
         _count: true,
       }),
       prisma.campaign.groupBy({
         by: ["channel"],
-        where: { organizationId, channel: { not: null } },
+        where: { ...orgFilter, channel: { not: null } },
         _count: true,
       }),
       prisma.campaign.findMany({
-        where: { organizationId },
+        where: orgFilter,
         orderBy: { createdAt: "desc" },
         take: 5,
         include: {
