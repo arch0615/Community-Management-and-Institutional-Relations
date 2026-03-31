@@ -1,0 +1,321 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Authentication & Users ─────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(MEMBER)
+  avatar    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  activityLogs ActivityLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+// ─── Multi-tenancy ──────────────────────────────────────────────
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users        User[]
+  contacts     Contact[]
+  segments     Segment[]
+  tags         Tag[]
+  channels     Channel[]
+  campaigns    Campaign[]
+  activityLogs ActivityLog[]
+
+  @@map("organizations")
+}
+
+// ─── Contacts ───────────────────────────────────────────────────
+
+model Contact {
+  id        String        @id @default(cuid())
+  firstName String
+  lastName  String?
+  email     String?
+  phone     String?
+  gender    Gender?
+  location  String?
+  status    ContactStatus @default(ACTIVE)
+  source    String?
+  avatarUrl String?
+  metadata  Json?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  interests    ContactInterest[]
+  tags         ContactTag[]
+  interactions Interaction[]
+  messages     Message[]
+  segments     SegmentContact[]
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([phone])
+  @@map("contacts")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+  BLOCKED
+}
+
+// ─── Interests & Tags ───────────────────────────────────────────
+
+model Interest {
+  id       String            @id @default(cuid())
+  name     String            @unique
+  contacts ContactInterest[]
+
+  @@map("interests")
+}
+
+model ContactInterest {
+  contactId  String
+  interestId String
+  contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  interest   Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+
+  @@id([contactId, interestId])
+  @@map("contact_interests")
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String
+  color String @default("#6366f1")
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  contacts ContactTag[]
+
+  @@unique([name, organizationId])
+  @@map("tags")
+}
+
+model ContactTag {
+  contactId String
+  tagId     String
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([contactId, tagId])
+  @@map("contact_tags")
+}
+
+// ─── Interactions & Messages ────────────────────────────────────
+
+model Interaction {
+  id        String          @id @default(cuid())
+  type      InteractionType
+  subject   String?
+  notes     String?
+  date      DateTime        @default(now())
+  createdAt DateTime        @default(now())
+
+  contactId String
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
+  @@map("interactions")
+}
+
+enum InteractionType {
+  EMAIL
+  PHONE_CALL
+  MEETING
+  WHATSAPP
+  INSTAGRAM_DM
+  FACEBOOK_MESSAGE
+  NOTE
+  OTHER
+}
+
+model Message {
+  id        String           @id @default(cuid())
+  content   String
+  direction MessageDirection
+  channel   ChannelType
+  status    MessageStatus    @default(SENT)
+  externalId String?
+  metadata  Json?
+  sentAt    DateTime         @default(now())
+  createdAt DateTime         @default(now())
+
+  contactId String
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  channelId String?
+  channelRef Channel? @relation(fields: [channelId], references: [id])
+
+  @@index([contactId])
+  @@index([channel])
+  @@map("messages")
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum ChannelType {
+  WHATSAPP
+  INSTAGRAM
+  FACEBOOK_MESSENGER
+  EMAIL
+  SMS
+}
+
+// ─── Channels (Meta Integration) ────────────────────────────────
+
+model Channel {
+  id          String      @id @default(cuid())
+  type        ChannelType
+  name        String
+  isActive    Boolean     @default(true)
+  credentials Json?
+  webhookUrl  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  messages Message[]
+
+  @@map("channels")
+}
+
+// ─── Segmentation ───────────────────────────────────────────────
+
+model Segment {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  filters     Json
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  contacts  SegmentContact[]
+  campaigns Campaign[]
+
+  @@map("segments")
+}
+
+model SegmentContact {
+  segmentId String
+  contactId String
+  segment   Segment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([segmentId, contactId])
+  @@map("segment_contacts")
+}
+
+// ─── Campaigns ──────────────────────────────────────────────────
+
+model Campaign {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  status      CampaignStatus @default(DRAFT)
+  channel     ChannelType?
+  content     Json?
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  segmentId String?
+  segment   Segment? @relation(fields: [segmentId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("campaigns")
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
+}
+
+// ─── Activity Log ───────────────────────────────────────────────
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  userId String?
+  user   User? @relation(fields: [userId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([entityType, entityId])
+  @@map("activity_logs")
+}
