@@ -18,17 +18,27 @@ export class ReportsService {
       activeContacts,
       totalSegments,
       totalMessages,
+      totalCampaigns,
+      totalTags,
+      totalInterests,
       contactsByGender,
       contactsByStatus,
       contactsBySource,
       recentInteractions,
       contactGrowth,
       messagesByChannel,
+      contactsByLocation,
+      topTags,
+      topInterests,
+      recentContacts,
     ] = await Promise.all([
       prisma.contact.count({ where: orgWhere }),
       prisma.contact.count({ where: { ...orgWhere, status: "ACTIVE" } }),
       prisma.segment.count({ where: orgWhere }),
       prisma.message.count({ where: contactOrgWhere }),
+      prisma.campaign.count({ where: orgWhere }),
+      prisma.tag.count({ where: orgWhere }),
+      prisma.interest.count(),
       prisma.contact.groupBy({
         by: ["gender"],
         where: orgWhere,
@@ -43,6 +53,8 @@ export class ReportsService {
         by: ["source"],
         where: { ...orgWhere, source: { not: null } },
         _count: true,
+        orderBy: { _count: { source: "desc" } },
+        take: 15,
       }),
       prisma.interaction.findMany({
         where: contactOrgWhere,
@@ -58,6 +70,29 @@ export class ReportsService {
         where: contactOrgWhere,
         _count: true,
       }),
+      prisma.contact.groupBy({
+        by: ["location"],
+        where: { ...orgWhere, location: { not: null } },
+        _count: true,
+        orderBy: { _count: { location: "desc" } },
+        take: 15,
+      }),
+      this.getTopTags(organizationId),
+      this.getTopInterests(organizationId),
+      prisma.contact.findMany({
+        where: orgWhere,
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          location: true,
+          createdAt: true,
+          source: true,
+        },
+      }),
     ]);
 
     return {
@@ -67,6 +102,9 @@ export class ReportsService {
         inactiveContacts: totalContacts - activeContacts,
         totalSegments,
         totalMessages,
+        totalCampaigns,
+        totalTags,
+        totalInterests,
       },
       contactsByGender,
       contactsByStatus,
@@ -74,31 +112,86 @@ export class ReportsService {
       recentInteractions,
       contactGrowth,
       messagesByChannel,
+      contactsByLocation,
+      topTags,
+      topInterests,
+      recentContacts,
     };
   }
 
-  private async getContactGrowth(organizationId?: string) {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  private async getTopTags(organizationId?: string) {
+    const orgWhere = organizationId ? { tag: { organizationId } } : {};
+    const tagCounts = await prisma.contactTag.groupBy({
+      by: ["tagId"],
+      where: orgWhere,
+      _count: true,
+      orderBy: { _count: { tagId: "desc" } },
+      take: 10,
+    });
 
+    const tagIds = tagCounts.map((t) => t.tagId);
+    const tags = await prisma.tag.findMany({
+      where: { id: { in: tagIds } },
+      select: { id: true, name: true, color: true },
+    });
+
+    const tagMap = new Map(tags.map((t) => [t.id, t]));
+    return tagCounts.map((tc) => ({
+      name: tagMap.get(tc.tagId)?.name || "Unknown",
+      color: tagMap.get(tc.tagId)?.color || "#6b7280",
+      count: tc._count,
+    }));
+  }
+
+  private async getTopInterests(organizationId?: string) {
+    const orgWhere = organizationId
+      ? { contact: { organizationId } }
+      : {};
+    const interestCounts = await prisma.contactInterest.groupBy({
+      by: ["interestId"],
+      where: orgWhere,
+      _count: true,
+      orderBy: { _count: { interestId: "desc" } },
+      take: 10,
+    });
+
+    const interestIds = interestCounts.map((i) => i.interestId);
+    const interests = await prisma.interest.findMany({
+      where: { id: { in: interestIds } },
+      select: { id: true, name: true },
+    });
+
+    const interestMap = new Map(interests.map((i) => [i.id, i]));
+    return interestCounts.map((ic) => ({
+      name: interestMap.get(ic.interestId)?.name || "Unknown",
+      count: ic._count,
+    }));
+  }
+
+  private async getContactGrowth(organizationId?: string) {
     const orgWhere = this.orgFilter(organizationId);
 
     const contacts = await prisma.contact.findMany({
-      where: {
-        ...orgWhere,
-        createdAt: { gte: sixMonthsAgo },
-      },
+      where: orgWhere,
       select: { createdAt: true },
       orderBy: { createdAt: "asc" },
     });
 
-    const monthlyData: Record<string, number> = {};
+    // Group by year-quarter for a cleaner timeline
+    const quarterlyData: Record<string, number> = {};
     contacts.forEach((contact) => {
-      const key = `${contact.createdAt.getFullYear()}-${String(contact.createdAt.getMonth() + 1).padStart(2, "0")}`;
-      monthlyData[key] = (monthlyData[key] || 0) + 1;
+      const year = contact.createdAt.getFullYear();
+      const quarter = Math.floor(contact.createdAt.getMonth() / 3) + 1;
+      const key = `${year} Q${quarter}`;
+      quarterlyData[key] = (quarterlyData[key] || 0) + 1;
     });
 
-    return Object.entries(monthlyData).map(([month, count]) => ({ month, count }));
+    // Cumulative growth
+    let cumulative = 0;
+    return Object.entries(quarterlyData).map(([period, count]) => {
+      cumulative += count;
+      return { month: period, count, cumulative };
+    });
   }
 
   async getNotifications(organizationId?: string, limit = 20) {

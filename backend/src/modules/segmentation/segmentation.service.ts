@@ -88,11 +88,19 @@ export class SegmentationService {
     if (filters.status) where.status = filters.status;
     if (filters.location) where.location = { contains: filters.location, mode: "insensitive" };
     if (filters.source) where.source = filters.source;
+
+    // Support both tagIds and tag names
     if (filters.tagIds?.length) {
       where.tags = { some: { tagId: { in: filters.tagIds } } };
+    } else if (filters.tags?.length) {
+      where.tags = { some: { tag: { name: { in: filters.tags } } } };
     }
+
+    // Support both interestIds and interest names
     if (filters.interestIds?.length) {
       where.interests = { some: { interestId: { in: filters.interestIds } } };
+    } else if (filters.interests?.length) {
+      where.interests = { some: { interest: { name: { in: filters.interests } } } };
     }
 
     const matchingContacts = await prisma.contact.findMany({
