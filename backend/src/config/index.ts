@@ -21,5 +21,6 @@ export const config = {
     phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || "",
     accessToken: process.env.WHATSAPP_ACCESS_TOKEN || "",
   },
+  pageAccessToken: process.env.PAGE_ACCESS_TOKEN || "",
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
 };
