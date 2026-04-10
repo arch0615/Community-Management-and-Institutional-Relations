@@ -5,11 +5,32 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach token to requests
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
+function redirectToLogin() {
+  if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  }
+}
+
+// Attach token to requests — check expiry before sending
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("token");
     if (token) {
+      if (isTokenExpired(token)) {
+        redirectToLogin();
+        return Promise.reject(new axios.Cancel("Session expired"));
+      }
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
@@ -20,10 +41,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+    if (error.response?.status === 401) {
+      redirectToLogin();
     }
     return Promise.reject(error);
   }
