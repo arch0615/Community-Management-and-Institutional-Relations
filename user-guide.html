@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>CRM Retarget - Guía de Usuario</title>
+<style>
+  @page { margin: 20mm 15mm; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; line-height: 1.6; font-size: 13px; }
+  h1 { color: #0f3460; font-size: 28px; text-align: center; margin-top: 0; border-bottom: 3px solid #0f3460; padding-bottom: 10px; }
+  h2 { color: #16213e; font-size: 20px; border-bottom: 2px solid #e94560; padding-bottom: 5px; margin-top: 30px; page-break-after: avoid; }
+  h3 { color: #0f3460; font-size: 15px; margin-top: 20px; page-break-after: avoid; }
+  .cover { text-align: center; padding: 120px 0 60px 0; page-break-after: always; }
+  .cover h1 { font-size: 36px; border: none; color: #0f3460; }
+  .cover .subtitle { font-size: 18px; color: #533483; margin-top: 10px; }
+  .cover .version { font-size: 14px; color: #666; margin-top: 40px; }
+  .cover .url { font-size: 16px; color: #e94560; margin-top: 10px; }
+  .toc { page-break-after: always; }
+  .toc h2 { text-align: center; border-bottom: none; }
+  .toc ul { list-style: none; padding: 0; }
+  .toc li { padding: 6px 0; border-bottom: 1px dotted #ccc; font-size: 14px; }
+  .toc li span { float: right; color: #666; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+  th { background: #0f3460; color: white; padding: 8px 10px; text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  .tip { background: #e8f4fd; border-left: 4px solid #2196F3; padding: 10px 15px; margin: 12px 0; font-size: 12px; }
+  .warning { background: #fff3e0; border-left: 4px solid #ff9800; padding: 10px 15px; margin: 12px 0; font-size: 12px; }
+  .important { background: #fce4ec; border-left: 4px solid #e94560; padding: 10px 15px; margin: 12px 0; font-size: 12px; }
+  .step { background: #f5f5f5; border-radius: 6px; padding: 12px 15px; margin: 8px 0; }
+  .step-number { display: inline-block; background: #0f3460; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold; margin-right: 8px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+  .badge-admin { background: #e8eaf6; color: #283593; }
+  .badge-manager { background: #e0f2f1; color: #00695c; }
+  .badge-member { background: #f3e5f5; color: #6a1b9a; }
+  .badge-super { background: #fce4ec; color: #b71c1c; }
+  .section { page-break-inside: avoid; }
+  .feature-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .feature-item { background: #f0f4ff; border: 1px solid #d0d8f0; border-radius: 4px; padding: 4px 10px; font-size: 11px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  .footer { text-align: center; color: #999; font-size: 10px; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 10px; }
+  code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+  <h1>CRM Retarget</h1>
+  <div class="subtitle">Guia de Usuario</div>
+  <div class="subtitle" style="font-size: 15px; color: #666; margin-top: 5px;">Gestion Comunitaria y Relaciones Institucionales</div>
+  <div class="url">https://cmr.socialtarget.cl</div>
+  <div class="version">Version 1.0 &mdash; Abril 2026</div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h2>Tabla de Contenido</h2>
+  <ul>
+    <li>1. Introduccion <span>3</span></li>
+    <li>2. Acceso al Sistema <span>3</span></li>
+    <li>3. Panel Principal (Dashboard) <span>4</span></li>
+    <li>4. Contactos <span>5</span></li>
+    <li>5. Segmentos <span>7</span></li>
+    <li>6. Campanas <span>8</span></li>
+    <li>7. Mensajes <span>9</span></li>
+    <li>8. Reportes <span>10</span></li>
+    <li>9. Configuracion <span>11</span></li>
+    <li>10. Perfil de Usuario <span>12</span></li>
+    <li>11. Panel de Administracion (Super Admin) <span>13</span></li>
+    <li>12. Roles y Permisos <span>14</span></li>
+    <li>13. Preguntas Frecuentes <span>15</span></li>
+  </ul>
+</div>
+
+<!-- 1. INTRODUCTION -->
+<h2>1. Introduccion</h2>
+<p>CRM Retarget es una plataforma de gestion comunitaria y relaciones institucionales que permite administrar contactos, crear segmentos de audiencia, ejecutar campanas multicanal (WhatsApp, Instagram, Facebook Messenger, Email, SMS) y generar reportes detallados.</p>
+
+<p>Este sistema esta disenado para organizaciones que necesitan gestionar comunidades, realizar seguimiento de interacciones y comunicarse de forma efectiva con sus contactos a traves de multiples canales.</p>
+
+<h3>Caracteristicas Principales</h3>
+<ul>
+  <li><strong>Gestion de Contactos:</strong> Crear, importar (CSV), exportar y organizar contactos con etiquetas</li>
+  <li><strong>Segmentacion:</strong> Crear segmentos de audiencia basados en filtros (genero, ubicacion, estado)</li>
+  <li><strong>Campanas Multicanal:</strong> Crear y programar campanas por WhatsApp, Instagram, Messenger, Email y SMS</li>
+  <li><strong>Mensajeria:</strong> Ver historial de conversaciones por contacto y canal</li>
+  <li><strong>Reportes:</strong> Graficos de crecimiento, distribucion geografica, genero, intereses y mas</li>
+  <li><strong>Integraciones Meta:</strong> Conexion directa con WhatsApp Business API, Instagram y Messenger</li>
+  <li><strong>Multi-organizacion:</strong> Soporte para multiples organizaciones desde una sola plataforma</li>
+</ul>
+
+<!-- 2. ACCESS -->
+<h2>2. Acceso al Sistema</h2>
+
+<h3>2.1 Iniciar Sesion</h3>
+<div class="step">
+  <span class="step-number">1</span> Ingrese a <strong>https://cmr.socialtarget.cl/login</strong><br>
+  <span class="step-number">2</span> Ingrese su <strong>correo electronico</strong> y <strong>contrasena</strong><br>
+  <span class="step-number">3</span> Haga clic en <strong>"Iniciar Sesion"</strong><br>
+  <span class="step-number">4</span> Sera redirigido al Panel Principal
+</div>
+
+<h3>2.2 Registro de Nuevo Usuario</h3>
+<div class="step">
+  <span class="step-number">1</span> Ingrese a <strong>https://cmr.socialtarget.cl/register</strong><br>
+  <span class="step-number">2</span> Complete los campos: <strong>Nombre completo, Email, Contrasena</strong><br>
+  <span class="step-number">3</span> Opcionalmente ingrese el <strong>nombre de organizacion</strong><br>
+  <span class="step-number">4</span> Haga clic en <strong>"Registrarse"</strong>
+</div>
+
+<div class="tip"><strong>Requisitos de contrasena:</strong> Minimo 8 caracteres, al menos 1 mayuscula, 1 minuscula, 1 numero y 1 caracter especial (!@#$%^&*).</div>
+
+<!-- 3. DASHBOARD -->
+<h2>3. Panel Principal (Dashboard)</h2>
+<p>El Panel Principal muestra un resumen ejecutivo de su organizacion con indicadores clave de rendimiento (KPIs) y graficos interactivos.</p>
+
+<h3>3.1 Tarjetas de Estadisticas</h3>
+<table>
+  <tr><th>Tarjeta</th><th>Descripcion</th></tr>
+  <tr><td><strong>Total Contactos</strong></td><td>Numero total de contactos registrados en la organizacion</td></tr>
+  <tr><td><strong>Contactos Activos</strong></td><td>Contactos con estado ACTIVO actualmente</td></tr>
+  <tr><td><strong>Segmentos</strong></td><td>Numero de segmentos de audiencia creados</td></tr>
+  <tr><td><strong>Etiquetas</strong></td><td>Total de etiquetas (tags) disponibles para categorizar contactos</td></tr>
+</table>
+
+<h3>3.2 Graficos Disponibles</h3>
+<ul>
+  <li><strong>Crecimiento de Contactos:</strong> Grafico de linea mostrando contactos acumulados y nuevos por trimestre</li>
+  <li><strong>Distribucion por Genero:</strong> Grafico circular con la proporcion de generos</li>
+  <li><strong>Distribucion por Ubicacion:</strong> Grafico de barras horizontales con las 15 comunas principales</li>
+  <li><strong>Participacion por Tipo de Evento:</strong> Contactos agrupados por etiqueta/tipo de evento</li>
+  <li><strong>Principales Intereses:</strong> Grafico de barras con los intereses mas comunes</li>
+  <li><strong>Contactos Recientes:</strong> Lista con los ultimos 10 contactos registrados</li>
+</ul>
+
+<!-- 4. CONTACTS -->
+<h2>4. Contactos</h2>
+<p>La seccion de Contactos es el corazon del CRM. Aqui puede crear, buscar, importar, exportar y administrar todos los contactos de su organizacion.</p>
+
+<h3>4.1 Ver Contactos</h3>
+<p>La tabla muestra contactos con la siguiente informacion:</p>
+<table>
+  <tr><th>Columna</th><th>Descripcion</th></tr>
+  <tr><td><strong>Nombre</strong></td><td>Nombre y apellido del contacto con avatar</td></tr>
+  <tr><td><strong>Email</strong></td><td>Correo electronico</td></tr>
+  <tr><td><strong>Telefono</strong></td><td>Numero telefonico</td></tr>
+  <tr><td><strong>Ubicacion</strong></td><td>Ciudad o comuna</td></tr>
+  <tr><td><strong>Estado</strong></td><td>ACTIVO, INACTIVO, ARCHIVADO o BLOQUEADO</td></tr>
+  <tr><td><strong>Etiquetas</strong></td><td>Tags asociados al contacto</td></tr>
+  <tr><td><strong>Acciones</strong></td><td>Ver detalle y Eliminar</td></tr>
+</table>
+
+<div class="tip"><strong>Busqueda:</strong> Use la barra de busqueda para filtrar contactos por nombre, email o ubicacion en tiempo real.</div>
+
+<h3>4.2 Crear un Contacto</h3>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en <strong>"Nuevo Contacto"</strong><br>
+  <span class="step-number">2</span> Complete el formulario:<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Nombre</strong> (obligatorio)<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; Apellido, Email, Telefono, Genero, Ubicacion (opcionales)<br>
+  <span class="step-number">3</span> Haga clic en <strong>"Crear Contacto"</strong>
+</div>
+
+<h3>4.3 Importar Contactos (CSV)</h3>
+<p>Puede importar multiples contactos a la vez mediante un archivo CSV.</p>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en <strong>"Importar CSV"</strong><br>
+  <span class="step-number">2</span> Seleccione un archivo CSV con las siguientes columnas:<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<code>nombre, apellido, email, telefono, genero, ubicacion, fuente</code><br>
+  <span class="step-number">3</span> El sistema procesara el archivo y mostrara los resultados:<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; Contactos creados<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; Contactos omitidos (duplicados por email)<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; Errores encontrados
+</div>
+
+<div class="warning"><strong>Nota:</strong> Los contactos con emails duplicados seran omitidos automaticamente.</div>
+
+<h3>4.4 Exportar Contactos</h3>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en <strong>"Exportar"</strong><br>
+  <span class="step-number">2</span> Se descargara un archivo CSV con todos los contactos<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;Nombre del archivo: <code>contactos_AAAA-MM-DD.csv</code>
+</div>
+
+<h3>4.5 Detalle del Contacto</h3>
+<p>Al hacer clic en un contacto, podra ver y editar su informacion completa:</p>
+<ul>
+  <li>Informacion personal (nombre, email, telefono, genero, ubicacion)</li>
+  <li>Estado del contacto (cambiar entre Activo, Inactivo, Archivado, Bloqueado)</li>
+  <li>Etiquetas asignadas (agregar o remover etiquetas)</li>
+  <li>Historial de interacciones</li>
+  <li>Mensajes asociados</li>
+</ul>
+
+<!-- 5. SEGMENTS -->
+<h2>5. Segmentos</h2>
+<p>Los segmentos permiten agrupar contactos segun criterios especificos para dirigir campanas a audiencias especificas.</p>
+
+<h3>5.1 Crear un Segmento</h3>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en <strong>"Nuevo Segmento"</strong><br>
+  <span class="step-number">2</span> Ingrese un <strong>nombre</strong> (obligatorio) y <strong>descripcion</strong><br>
+  <span class="step-number">3</span> Configure los filtros:<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Genero:</strong> Cualquiera, Masculino, Femenino, No Binario, Otro<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Estado:</strong> Cualquiera, Activo, Inactivo, Archivado<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Ubicacion:</strong> Filtrar por ciudad o comuna<br>
+  <span class="step-number">4</span> Haga clic en <strong>"Crear Segmento"</strong>
+</div>
+
+<h3>5.2 Aplicar Filtros</h3>
+<p>Al hacer clic en <strong>"Aplicar Filtros"</strong> en un segmento, el sistema automaticamente emparejara contactos que cumplan los criterios y mostrara el conteo de contactos coincidentes.</p>
+
+<h3>5.3 Vista de Segmentos</h3>
+<p>Los segmentos se muestran como tarjetas con:</p>
+<ul>
+  <li>Nombre y descripcion del segmento</li>
+  <li>Estado (Activo/Inactivo)</li>
+  <li>Conteo de contactos que coinciden</li>
+  <li>Filtros aplicados como badges</li>
+  <li>Botones de accion: Aplicar Filtros, Eliminar</li>
+</ul>
+
+<!-- 6. CAMPAIGNS -->
+<h2>6. Campanas</h2>
+<p>Las campanas permiten enviar mensajes masivos a segmentos de contactos a traves de multiples canales de comunicacion.</p>
+
+<h3>6.1 Estadisticas de Campanas</h3>
+<table>
+  <tr><th>Indicador</th><th>Descripcion</th></tr>
+  <tr><td><strong>Total</strong></td><td>Numero total de campanas creadas</td></tr>
+  <tr><td><strong>Borradores</strong></td><td>Campanas en estado DRAFT (borrador)</td></tr>
+  <tr><td><strong>Programadas</strong></td><td>Campanas programadas para envio futuro</td></tr>
+  <tr><td><strong>Enviadas</strong></td><td>Campanas ya enviadas</td></tr>
+</table>
+
+<h3>6.2 Crear una Campana</h3>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en <strong>"Nueva Campana"</strong><br>
+  <span class="step-number">2</span> Complete el formulario:<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Nombre</strong> (obligatorio)<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Descripcion</strong><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Canal:</strong> WhatsApp, Instagram, Facebook Messenger, Email o SMS<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Segmento:</strong> Seleccione el segmento de audiencia objetivo<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Fecha de envio:</strong> Programar fecha y hora (opcional)<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&bull; <strong>Mensaje:</strong> Contenido del mensaje a enviar<br>
+  <span class="step-number">3</span> Haga clic en <strong>"Crear"</strong>
+</div>
+
+<h3>6.3 Estados de Campana</h3>
+<table>
+  <tr><th>Estado</th><th>Color</th><th>Descripcion</th></tr>
+  <tr><td><strong>DRAFT</strong></td><td>Gris</td><td>Borrador - puede ser editada o enviada</td></tr>
+  <tr><td><strong>SCHEDULED</strong></td><td>Azul</td><td>Programada para envio en fecha futura</td></tr>
+  <tr><td><strong>SENDING</strong></td><td>Amarillo</td><td>En proceso de envio (icono animado)</td></tr>
+  <tr><td><strong>SENT</strong></td><td>Verde</td><td>Enviada exitosamente</td></tr>
+  <tr><td><strong>CANCELLED</strong></td><td>Rojo</td><td>Campana cancelada</td></tr>
+</table>
+
+<h3>6.4 Acciones de Campana</h3>
+<ul>
+  <li><strong>Ver:</strong> Ver detalle completo de la campana</li>
+  <li><strong>Enviar:</strong> Ejecutar el envio inmediato (requiere canal seleccionado)</li>
+  <li><strong>Duplicar:</strong> Crear una copia de la campana con la misma configuracion</li>
+  <li><strong>Eliminar:</strong> Eliminar la campana (no disponible mientras se esta enviando)</li>
+</ul>
+
+<!-- 7. MESSAGES -->
+<h2>7. Mensajes</h2>
+<p>La seccion de Mensajes muestra el historial de todas las conversaciones agrupadas por contacto.</p>
+
+<h3>7.1 Estadisticas</h3>
+<table>
+  <tr><th>Indicador</th><th>Descripcion</th></tr>
+  <tr><td><strong>Total de Mensajes</strong></td><td>Todos los mensajes (entrantes + salientes)</td></tr>
+  <tr><td><strong>Enviados</strong></td><td>Mensajes salientes desde el CRM</td></tr>
+  <tr><td><strong>Recibidos</strong></td><td>Mensajes entrantes de los contactos</td></tr>
+</table>
+
+<h3>7.2 Lista de Conversaciones</h3>
+<p>Cada conversacion muestra:</p>
+<ul>
+  <li>Avatar con inicial del contacto</li>
+  <li>Nombre del contacto</li>
+  <li>Ultimo mensaje recibido o enviado</li>
+  <li>Fecha del ultimo mensaje</li>
+  <li>Canal (WhatsApp, Instagram, Messenger, Email, SMS)</li>
+  <li>Cantidad total de mensajes en la conversacion</li>
+</ul>
+
+<!-- 8. REPORTS -->
+<h2>8. Reportes</h2>
+<p>La seccion de Reportes ofrece analisis detallados con graficos interactivos para la toma de decisiones.</p>
+
+<h3>8.1 Exportar Reporte</h3>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en <strong>"Exportar Reporte"</strong><br>
+  <span class="step-number">2</span> Se descargara un archivo CSV (o JSON como respaldo)<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;Nombre: <code>reporte_contactos_AAAA-MM-DD.csv</code>
+</div>
+
+<h3>8.2 Graficos Disponibles</h3>
+<table>
+  <tr><th>Grafico</th><th>Tipo</th><th>Descripcion</th></tr>
+  <tr><td><strong>Crecimiento de Contactos</strong></td><td>Linea</td><td>Tendencia acumulada y nuevos contactos por trimestre</td></tr>
+  <tr><td><strong>Distribucion por Estado</strong></td><td>Circular</td><td>Proporcion de contactos por estado (Activo, Inactivo, etc.)</td></tr>
+  <tr><td><strong>Distribucion Geografica</strong></td><td>Barras</td><td>Contactos por comuna/ciudad</td></tr>
+  <tr><td><strong>Distribucion por Genero</strong></td><td>Circular</td><td>Proporcion de generos</td></tr>
+  <tr><td><strong>Participacion por Evento</strong></td><td>Barras</td><td>Contactos por tipo de evento/etiqueta</td></tr>
+  <tr><td><strong>Intereses Principales</strong></td><td>Barras</td><td>Distribucion de intereses</td></tr>
+  <tr><td><strong>Contactos por Fuente</strong></td><td>Barras</td><td>Top 15 fuentes de adquisicion</td></tr>
+  <tr><td><strong>Interacciones por Tipo</strong></td><td>Lista</td><td>Desglose de interacciones (ultimos 30 dias)</td></tr>
+  <tr><td><strong>Mensajes por Canal</strong></td><td>Lista</td><td>Volumen por canal y direccion (ultimos 30 dias)</td></tr>
+</table>
+
+<!-- 9. SETTINGS -->
+<h2>9. Configuracion</h2>
+<p>La seccion de Configuracion permite gestionar integraciones con plataformas externas y canales de comunicacion.</p>
+
+<div class="important"><strong>Acceso:</strong> Solo usuarios con rol ADMIN pueden crear, editar o eliminar canales.</div>
+
+<h3>9.1 Informacion del Perfil</h3>
+<p>Se muestra su nombre, email, rol y organizacion actual.</p>
+
+<h3>9.2 Guia de Integracion Meta</h3>
+<p>Instrucciones paso a paso para conectar canales Meta (WhatsApp, Instagram, Messenger):</p>
+<div class="step">
+  <span class="step-number">1</span> Crear una aplicacion en Meta for Developers<br>
+  <span class="step-number">2</span> Obtener credenciales (Phone Number ID, Access Token, etc.)<br>
+  <span class="step-number">3</span> Configurar el canal en el CRM e ingresar la URL del webhook
+</div>
+
+<h3>9.3 Gestion de Canales</h3>
+
+<h4>Crear un Canal</h4>
+<div class="step">
+  <span class="step-number">1</span> Seleccione el <strong>tipo de canal</strong> (WhatsApp, Instagram, Messenger, Email, SMS)<br>
+  <span class="step-number">2</span> Ingrese un <strong>nombre</strong> para el canal<br>
+  <span class="step-number">3</span> Complete las <strong>credenciales</strong> segun el tipo:<br>
+</div>
+
+<table>
+  <tr><th>Canal</th><th>Credenciales Requeridas</th></tr>
+  <tr><td><strong>WhatsApp</strong></td><td>Phone Number ID, Access Token, Business Account ID</td></tr>
+  <tr><td><strong>Instagram</strong></td><td>Page Access Token, IG User ID</td></tr>
+  <tr><td><strong>Messenger</strong></td><td>Page Access Token, Page ID</td></tr>
+  <tr><td><strong>Email</strong></td><td>SMTP Host, Port, User, Password</td></tr>
+  <tr><td><strong>SMS</strong></td><td>API Key, Sender ID</td></tr>
+</table>
+
+<div class="step">
+  <span class="step-number">4</span> Haga clic en <strong>"Probar Conexion"</strong> para verificar las credenciales<br>
+  <span class="step-number">5</span> Si la prueba es exitosa, haga clic en <strong>"Guardar Canal"</strong>
+</div>
+
+<h4>Acciones de Canal</h4>
+<ul>
+  <li><strong>Activar/Desactivar:</strong> Encender o apagar un canal sin eliminarlo</li>
+  <li><strong>Editar Credenciales:</strong> Actualizar tokens o claves de acceso</li>
+  <li><strong>Probar Conexion:</strong> Verificar que las credenciales siguen siendo validas</li>
+  <li><strong>Eliminar:</strong> Remover el canal permanentemente</li>
+</ul>
+
+<!-- 10. PROFILE -->
+<h2>10. Perfil de Usuario</h2>
+<p>En la pagina de perfil puede gestionar su informacion personal y seguridad.</p>
+
+<h3>10.1 Editar Informacion Personal</h3>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en su nombre en la barra lateral (parte inferior)<br>
+  <span class="step-number">2</span> Modifique su <strong>nombre</strong> o <strong>email</strong><br>
+  <span class="step-number">3</span> Haga clic en <strong>"Guardar Cambios"</strong>
+</div>
+
+<h3>10.2 Cambiar Contrasena</h3>
+<div class="step">
+  <span class="step-number">1</span> Ingrese su <strong>contrasena actual</strong><br>
+  <span class="step-number">2</span> Ingrese la <strong>nueva contrasena</strong> (debe cumplir los requisitos de seguridad)<br>
+  <span class="step-number">3</span> Confirme la nueva contrasena<br>
+  <span class="step-number">4</span> Haga clic en <strong>"Cambiar Contrasena"</strong>
+</div>
+
+<!-- 11. ADMIN -->
+<h2>11. Panel de Administracion (Super Admin)</h2>
+
+<div class="important"><strong>Acceso exclusivo:</strong> Solo usuarios con rol SUPER_ADMIN pueden acceder a esta seccion.</div>
+
+<h3>11.1 Panel General</h3>
+<p>Vista ejecutiva de toda la plataforma:</p>
+<ul>
+  <li><strong>Organizaciones:</strong> Total de organizaciones registradas</li>
+  <li><strong>Usuarios:</strong> Total de usuarios en la plataforma</li>
+  <li><strong>Contactos:</strong> Total global de contactos</li>
+  <li><strong>Mensajes:</strong> Total global de mensajes</li>
+</ul>
+<p>Graficos adicionales: Contactos por organizacion, distribucion de roles, mensajes por canal, actividad reciente.</p>
+
+<h3>11.2 Gestion de Organizaciones</h3>
+<h4>Crear Organizacion</h4>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en <strong>"Nueva Organizacion"</strong><br>
+  <span class="step-number">2</span> Ingrese el <strong>nombre</strong> (obligatorio) y opcionalmente un <strong>slug</strong><br>
+  <span class="step-number">3</span> Haga clic en <strong>"Crear"</strong>
+</div>
+
+<p>Cada organizacion muestra: nombre, slug, cantidad de usuarios, contactos, campanas y fecha de creacion.</p>
+
+<h3>11.3 Gestion de Usuarios</h3>
+<h4>Crear Usuario</h4>
+<div class="step">
+  <span class="step-number">1</span> Haga clic en <strong>"Nuevo Usuario"</strong><br>
+  <span class="step-number">2</span> Complete: <strong>Nombre, Email, Contrasena</strong> (minimo 8 caracteres)<br>
+  <span class="step-number">3</span> Seleccione el <strong>Rol:</strong> ADMIN, MANAGER o MEMBER<br>
+  <span class="step-number">4</span> Seleccione la <strong>Organizacion</strong> a la que pertenecera<br>
+  <span class="step-number">5</span> Haga clic en <strong>"Crear"</strong>
+</div>
+
+<p>Puede filtrar usuarios por nombre, rol u organizacion. Puede activar/desactivar usuarios sin eliminarlos.</p>
+
+<!-- 12. ROLES -->
+<h2>12. Roles y Permisos</h2>
+<p>El sistema tiene 4 niveles de acceso:</p>
+
+<table>
+  <tr><th>Rol</th><th>Nivel</th><th>Permisos</th></tr>
+  <tr>
+    <td><span class="badge badge-super">SUPER_ADMIN</span></td>
+    <td>Plataforma</td>
+    <td>Acceso completo: gestionar organizaciones, usuarios, todos los datos de la plataforma</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-admin">ADMIN</span></td>
+    <td>Organizacion</td>
+    <td>Gestionar contactos, segmentos, campanas, mensajes, reportes, configurar canales e integraciones</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-manager">MANAGER</span></td>
+    <td>Organizacion</td>
+    <td>Gestionar contactos, segmentos, campanas, mensajes y reportes. Sin acceso a configuracion de canales</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-member">MEMBER</span></td>
+    <td>Organizacion</td>
+    <td>Acceso limitado: ver contactos, mensajes y reportes</td>
+  </tr>
+</table>
+
+<h3>Resumen de Permisos por Seccion</h3>
+<table>
+  <tr><th>Seccion</th><th>SUPER_ADMIN</th><th>ADMIN</th><th>MANAGER</th><th>MEMBER</th></tr>
+  <tr><td>Panel Principal</td><td>Si</td><td>Si</td><td>Si</td><td>Si</td></tr>
+  <tr><td>Contactos (CRUD)</td><td>Si</td><td>Si</td><td>Si</td><td>Ver</td></tr>
+  <tr><td>Importar/Exportar</td><td>Si</td><td>Si</td><td>Si</td><td>Ver</td></tr>
+  <tr><td>Segmentos</td><td>Si</td><td>Si</td><td>Si</td><td>Ver</td></tr>
+  <tr><td>Campanas</td><td>Si</td><td>Si</td><td>Si</td><td>Ver</td></tr>
+  <tr><td>Mensajes</td><td>Si</td><td>Si</td><td>Si</td><td>Si</td></tr>
+  <tr><td>Reportes</td><td>Si</td><td>Si</td><td>Si</td><td>Si</td></tr>
+  <tr><td>Configuracion (Canales)</td><td>Si</td><td>Si</td><td>No</td><td>No</td></tr>
+  <tr><td>Enviar WhatsApp</td><td>Si</td><td>Si</td><td>Si</td><td>No</td></tr>
+  <tr><td>Admin Panel</td><td>Si</td><td>No</td><td>No</td><td>No</td></tr>
+</table>
+
+<!-- 13. FAQ -->
+<h2>13. Preguntas Frecuentes</h2>
+
+<h3>No puedo iniciar sesion</h3>
+<p>Verifique que su email y contrasena sean correctos. Si olvido su contrasena, contacte al administrador de su organizacion para restablecerla.</p>
+
+<h3>No puedo ver la seccion de Configuracion</h3>
+<p>Solo los usuarios con rol <strong>ADMIN</strong> o <strong>SUPER_ADMIN</strong> tienen acceso a la configuracion de canales. Contacte a su administrador si necesita acceso.</p>
+
+<h3>No recibo mensajes de WhatsApp en el CRM</h3>
+<p>Verifique que:</p>
+<ul>
+  <li>El canal WhatsApp este activo en Configuracion</li>
+  <li>Las credenciales (Phone Number ID, Access Token) sean correctas</li>
+  <li>El webhook este configurado correctamente en Meta Developer Console</li>
+  <li>La aplicacion Meta este publicada (modo "Activa", no "En desarrollo")</li>
+</ul>
+
+<h3>Como importo contactos desde un Excel?</h3>
+<p>Primero exporte su Excel como archivo CSV (Archivo → Guardar como → CSV). Luego use la funcion <strong>"Importar CSV"</strong> en la seccion Contactos. Las columnas deben ser: <code>nombre, apellido, email, telefono, genero, ubicacion, fuente</code>.</p>
+
+<h3>Puedo enviar mensajes a cualquier numero de WhatsApp?</h3>
+<p>Si, una vez que la aplicacion Meta este en modo produccion y el negocio este verificado. En modo desarrollo, solo puede enviar a numeros de prueba registrados.</p>
+
+<h3>Que es un Segmento?</h3>
+<p>Un segmento es un grupo de contactos filtrados por criterios como genero, ubicacion o estado. Los segmentos se usan para dirigir campanas a audiencias especificas.</p>
+
+<h3>Como veo los reportes de mi organizacion?</h3>
+<p>Vaya a la seccion <strong>Reportes</strong> en el menu lateral. Puede exportar los datos como CSV haciendo clic en <strong>"Exportar Reporte"</strong>.</p>
+
+<div class="footer">
+  <p>CRM Retarget &mdash; Guia de Usuario v1.0 &mdash; Abril 2026</p>
+  <p>https://cmr.socialtarget.cl &mdash; Soporte: contactar al administrador del sistema</p>
+</div>
+
+</body>
+</html>

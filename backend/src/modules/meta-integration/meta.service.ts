@@ -36,13 +36,16 @@ export class MetaService {
       for (const change of changes) {
         if (change.field === "messages") {
           const messages = change.value?.messages || [];
+          const contacts = change.value?.contacts || [];
           for (const msg of messages) {
+            const waContact = contacts.find((c: any) => c.wa_id === msg.from);
             await this.storeInboundMessage({
               externalId: msg.id,
               content: msg.text?.body || msg.type,
               phone: msg.from,
               channel: "WHATSAPP",
               metadata: msg,
+              profileName: waContact?.profile?.name,
             });
           }
         }
@@ -91,8 +94,8 @@ export class MetaService {
     externalUserId?: string;
     channel: string;
     metadata: any;
+    profileName?: string;
   }) {
-    // Find or create contact based on phone or external ID
     let contact = null;
 
     if (data.phone) {
@@ -107,20 +110,49 @@ export class MetaService {
       });
     }
 
-    // If no contact found, we store the message with metadata for later matching
-    if (contact) {
-      await prisma.message.create({
+    if (!contact) {
+      const channelRecord = await prisma.channel.findFirst({
+        where: { type: data.channel as any, isActive: true },
+      });
+      const organizationId =
+        channelRecord?.organizationId ||
+        (await prisma.organization.findFirst())?.id;
+
+      if (!organizationId) {
+        console.error("[Webhook] No organization found to attach contact");
+        return;
+      }
+
+      const nameParts = (data.profileName || "").trim().split(" ");
+      const firstName = nameParts[0] || data.phone || "Unknown";
+      const lastName = nameParts.slice(1).join(" ") || null;
+
+      contact = await prisma.contact.create({
         data: {
-          externalId: data.externalId,
-          content: data.content,
-          direction: "INBOUND",
-          channel: data.channel as any,
-          status: "DELIVERED",
-          contactId: contact.id,
-          metadata: data.metadata,
+          firstName,
+          lastName,
+          phone: data.phone,
+          source: `${data.channel}_WEBHOOK`,
+          organizationId,
+          metadata: data.externalUserId
+            ? { externalId: data.externalUserId }
+            : undefined,
         },
       });
+      console.log(`[Webhook] Auto-created contact ${contact.id} for ${data.phone || data.externalUserId}`);
     }
+
+    await prisma.message.create({
+      data: {
+        externalId: data.externalId,
+        content: data.content,
+        direction: "INBOUND",
+        channel: data.channel as any,
+        status: "DELIVERED",
+        contactId: contact.id,
+        metadata: data.metadata,
+      },
+    });
   }
 
   // ─── Send Messages via Meta APIs ──────────────────────────

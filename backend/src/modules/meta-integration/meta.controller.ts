@@ -17,6 +17,7 @@ export class MetaController {
   // Webhook event handler (POST)
   async handleWebhook(req: Request, res: Response, next: NextFunction) {
     try {
+      console.log("[Webhook] Received:", JSON.stringify(req.body, null, 2));
       await metaService.processWebhookEvent(req.body);
       res.status(200).send("EVENT_RECEIVED");
     } catch (error) {
